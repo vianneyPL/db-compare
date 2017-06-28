@@ -3,18 +3,13 @@
     {
         "qdb-benchmark": "",
         "databases": [
-            {
-                "name": "qdb",
-                "cluster": "qdb://192.168.1.20:2836",
-                "setup": "",
-                "teardown": ""
-            }
+            "qdb"
         ],
         "tests": [
             {
-                "name": "batch",
+                "name": "blob",
                 "subtests": [
-                  "blob_put"
+                  "put"
                 ]
             }
         ],
@@ -40,6 +35,5 @@
         ],
         "pause": "20",
         "duration": "20"
-    },
-    
+    }
 }

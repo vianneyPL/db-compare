@@ -1,4 +1,4 @@
-package db-compare
+package main
 
 // BEFORE RUNNING:
 // ---------------

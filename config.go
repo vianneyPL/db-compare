@@ -1,8 +1,10 @@
-package db-compare
+package main
 
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"os"
 )
 
 type JsonConfig struct {
@@ -22,6 +24,14 @@ type JsonConfig struct {
 	} `json:"tests_config"`
 }
 
+func MustOpenConfig(path string) []byte {
+	config, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return config
+}
+
 func ReadConfig(config []byte) (JsonConfig, error) {
 	var jsonConfig JsonConfig
 	err := json.Unmarshal(config, &jsonConfig)
@@ -38,7 +48,21 @@ func CheckConfig(jsonConfig JsonConfig) error {
 			}
 		}
 		if found == false {
-			return errors.New("Database is not supported, aborting.\nTo see a list supported databases run: ./db-compare --list-databases")
+			return errors.New("Database is not supported, aborting.\nTo see a list supported databases run: ./db-compare -db_list")
+		}
+	}
+	for _, test := range jsonConfig.TestsConfig.Tests {
+		for _, subtest := range test.Subtests {
+			fulltest := test.Name + "_" + subtest
+			found := false
+			for _, supportedTest := range supportedTests(jsonConfig.TestsConfig.Databases) {
+				if supportedTest == fulltest {
+					found = true
+				}
+			}
+			if found == false {
+				return errors.New("Test is not supported in this configuration, aborting.\nTo see a list supported tests run: ./db-compare -test_list")
+			}
 		}
 	}
 	return nil
@@ -46,4 +70,24 @@ func CheckConfig(jsonConfig JsonConfig) error {
 
 func supportedDatabases() []string {
 	return []string{"qdb"}
+}
+
+var supportedTestsStrings []string
+
+func supportedTests(databases []string) []string {
+	if supportedTestsStrings == nil {
+		supportedTestsStrings = getSupportedTests(databases)
+	}
+	return supportedTestsStrings
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
 }
