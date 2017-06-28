@@ -1,0 +1,45 @@
+{
+    "tests_config":
+    {
+        "qdb-benchmark": "",
+        "databases": [
+            {
+                "name": "qdb",
+                "cluster": "qdb://192.168.1.20:2836",
+                "setup": "",
+                "teardown": ""
+            }
+        ],
+        "tests": [
+            {
+                "name": "batch",
+                "subtests": [
+                  "blob_put"
+                ]
+            }
+        ],
+        "nodes": [
+            1
+        ],
+        "threads": [
+            1,
+            2,
+            4,
+            8,
+            16
+        ],
+        "sizes": [
+            "8",
+            "2k",
+            "64k",
+            "2M"
+        ],
+        "number-elements": [
+            "10",
+            "100"
+        ],
+        "pause": "20",
+        "duration": "20"
+    },
+    
+}
