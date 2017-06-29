@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -10,25 +11,42 @@ import (
 	"strings"
 )
 
-func LoadQdbBenchmark(path string) error {
-	_, err := os.Stat("./tool/bin/qdb-benchmark")
+//TODO(vianney): Replace every command with a pure golang abstraction
+
+// MustLoadQdbBenchmark : Check input path and copy to ./tool/bin/qdb-benchmark
+// If path is empty, check if a qdb-benchmark binary is already present
+// If not download latest version from internet
+//
+// Panic on error
+func MustLoadQdbBenchmark(path string) {
+	err := exec.Command("mkdir", "-p", "tool").Run()
 	if err != nil {
-		err = exec.Command("mkdir", "-p", "tool").Run()
+		panic(errors.New("Could not create tool folder"))
+	}
+	if path != "" {
+		err = exec.Command("mkdir", "-p", "./tool/bin").Run()
 		if err != nil {
-			return errors.New("Could not create tool folder")
+			panic(errors.New("Could not create bin folder"))
 		}
-		if path == "" {
-			err := installQdbBenchmark()
-			if err != nil {
-				return err
+		err := exec.Command("cp", path, "./tool/bin/qdb-benchark").Run()
+		if err != nil {
+			panic(fmt.Errorf("Could not copy qdb-benchmark from: %s", path))
+		}
+	} else {
+		_, err := os.Stat("./tool/bin/qdb-benchmark")
+		if err != nil {
+			if path == "" {
+				err := installQdbBenchmark()
+				if err != nil {
+					panic(err)
+				}
 			}
-		} else {
-			exec.Command("cp", path, "./tool/qdb-benchark").Run()
 		}
 	}
-	return nil
 }
 
+// InstallQdbBenchmark
+// Download and extract latest version of qdb-benchmark
 func installQdbBenchmark() error {
 	err := downloadQdbBenchmark()
 	if err != nil {
@@ -102,7 +120,7 @@ func getSupportedTests(databases []string) []string {
 
 	databaseTests := getTestsFromInput(lines, databases)
 
-	// suppress tests that are not in every database tested
+	// suppress tests that are not in every database
 	var results []string
 	for index, database := range databases {
 		tests := databaseTests[database]

@@ -7,24 +7,31 @@ import (
 	"os"
 )
 
-type JsonConfig struct {
-	TestsConfig struct {
-		QdbBenchmark string   `json:"qdb-benchmark"`
-		Databases    []string `json:"databases"`
-		Tests        []struct {
-			Name     string   `json:"name"`
-			Subtests []string `json:"subtests"`
-		} `json:"tests"`
-		Nodes          []int    `json:"nodes"`
-		Threads        []int    `json:"threads"`
-		Sizes          []string `json:"sizes"`
-		NumberElements []string `json:"number-elements"`
-		Pause          string   `json:"pause"`
-		Duration       string   `json:"duration"`
-	} `json:"tests_config"`
+// JSONConfig : a json type describing the config file
+type JSONConfig struct {
+	QdbBenchmark string   `json:"qdb-benchmark"`
+	Databases    []string `json:"databases"`
+	Tests        []string `json:"tests"`
+	TestsConfig  struct {
+		Threads  []int    `json:"threads"`
+		Sizes    []string `json:"sizes"`
+		Packs    []string `json:"packs"`
+		Pause    string   `json:"pause"`
+		Duration string   `json:"duration"`
+	} `json:"tests-config"`
+	Clusters []struct {
+		Location string `json:"location"`
+		System   string `json:"system"`
+		Nodes    []int  `json:"nodes"`
+		Threads  []int  `json:"threads"`
+	} `json:"clusters"`
+	Transient bool `json:"transient"`
 }
 
-func MustOpenConfig(path string) []byte {
+// MustReadConfig : Open and return the bytes of the config file
+//
+// Panic on error
+func MustReadConfig(path string) []byte {
 	config, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -32,14 +39,21 @@ func MustOpenConfig(path string) []byte {
 	return config
 }
 
-func ReadConfig(config []byte) (JsonConfig, error) {
-	var jsonConfig JsonConfig
-	err := json.Unmarshal(config, &jsonConfig)
-	return jsonConfig, err
+// MustConvertConfig : Transform the config file into json for later use
+//
+// Panic on error
+func MustConvertConfig(fileConfig []byte) JSONConfig {
+	var jsonConfig JSONConfig
+	err := json.Unmarshal(fileConfig, &jsonConfig)
+	if err != nil {
+		panic(err)
+	}
+	return jsonConfig
 }
 
-func CheckConfig(jsonConfig JsonConfig) error {
-	for database := range jsonConfig.TestsConfig.Databases {
+// CheckConfig : Check the configuration for any error
+func CheckConfig(jsonConfig JSONConfig) error {
+	for database := range jsonConfig.Databases {
 		found := false
 		for supported := range supportedDatabases() {
 			if database == supported {
@@ -51,29 +65,30 @@ func CheckConfig(jsonConfig JsonConfig) error {
 			return errors.New("Database is not supported, aborting.\nTo see a list supported databases run: ./db-compare -db_list")
 		}
 	}
-	for _, test := range jsonConfig.TestsConfig.Tests {
-		for _, subtest := range test.Subtests {
-			fulltest := test.Name + "_" + subtest
-			found := false
-			for _, supportedTest := range supportedTests(jsonConfig.TestsConfig.Databases) {
-				if supportedTest == fulltest {
-					found = true
-				}
+	for _, test := range jsonConfig.Tests {
+		found := false
+		for _, supportedTest := range supportedTests(jsonConfig.Databases) {
+			if supportedTest == test {
+				found = true
 			}
-			if found == false {
-				return errors.New("Test is not supported in this configuration, aborting.\nTo see a list supported tests run: ./db-compare -test_list")
-			}
+		}
+		if found == false {
+			return errors.New("Test is not supported in this configuration, aborting.\nTo see a list supported tests run: ./db-compare -test_list")
 		}
 	}
 	return nil
 }
 
+// supportedDatabases : return a list of supported databases
 func supportedDatabases() []string {
 	return []string{"qdb"}
 }
 
 var supportedTestsStrings []string
 
+// supportedTests : return a list of supported tests
+// ask the qdb-benchmark tool
+// erase any test that are not present in every databases tested
 func supportedTests(databases []string) []string {
 	if supportedTestsStrings == nil {
 		supportedTestsStrings = getSupportedTests(databases)

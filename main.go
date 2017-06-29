@@ -18,17 +18,9 @@ func main() {
 	var listTests = flag.Bool("list-tests", false, "List the supported tests")
 	flag.Parse()
 
-	dataConfig := MustOpenConfig(*config)
-	jsonConfig, err := ReadConfig(dataConfig)
-	if err != nil {
-		fmt.Println("Error while reading config: ", err)
-		os.Exit(-1)
-	}
-	err = LoadQdbBenchmark(jsonConfig.TestsConfig.QdbBenchmark)
-	if err != nil {
-		fmt.Println("Error while loading benchmarking tool: ", err)
-		os.Exit(-1)
-	}
+	fileConfig := MustReadConfig(*config)
+	jsonConfig := MustConvertConfig(fileConfig)
+	MustLoadQdbBenchmark(jsonConfig.QdbBenchmark)
 
 	if *listDatabases == true {
 		fmt.Println("Supported databases:")
@@ -40,14 +32,14 @@ func main() {
 
 	if *listTests == true {
 		fmt.Println("Supported tests:")
-		for _, test := range supportedTests(jsonConfig.TestsConfig.Databases) {
+		for _, test := range supportedTests(jsonConfig.Databases) {
 			fmt.Println("\t", test)
 		}
 		fmt.Println("")
 	}
 
 	if *listTests == false && *listDatabases == false {
-		err = CheckConfig(jsonConfig)
+		err := CheckConfig(jsonConfig)
 		if err != nil {
 			fmt.Println("Error while checking config: ", err)
 			os.Exit(-1)

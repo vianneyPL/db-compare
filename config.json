@@ -1,21 +1,14 @@
 {
-    "tests_config":
-    {
-        "qdb-benchmark": "",
-        "databases": [
-            "qdb"
-        ],
-        "tests": [
-            {
-                "name": "blob",
-                "subtests": [
-                  "put"
-                ]
-            }
-        ],
-        "nodes": [
-            1
-        ],
+    "qdb-benchmark": "",
+    "databases": [
+        "qdb"
+    ],
+    "tests": [
+        "blob_put",
+        "blob_get",
+        "blob_update"
+    ],
+    "tests-config": {
         "threads": [
             1,
             2,
@@ -29,11 +22,26 @@
             "64k",
             "2M"
         ],
-        "number-elements": [
+        "packs": [
             "10",
             "100"
         ],
         "pause": "20",
         "duration": "20"
-    }
+    },
+    "clusters": [
+        {
+            "location": "belgium",
+            "system": "linux",
+            "nodes": [
+                1,
+                3,
+                5
+            ],
+            "threads": [
+                8
+            ]
+        }
+    ],
+    "transient": true
 }
