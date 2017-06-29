@@ -86,4 +86,8 @@ To get a list of available location and system you can run `./db-compare -list-c
         }
     ],
     "transient": true
+<<<<<<< HEAD
 }```
+=======
+}```
+>>>>>>> e32cb152c9ec331bd9da9bc03b55adebbade556e
