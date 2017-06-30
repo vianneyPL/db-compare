@@ -71,20 +71,36 @@ To get a list of available location and system you can run `./db-compare -list-c
         "pause": "20",
         "duration": "20"
     },
-    "clusters": [
-        {
-            "location": "belgium",
-            "system": "linux",
-            "nodes": [
-                1,
-                3,
-                5
-            ],
-            "threads": [
-                8
-            ]
-        }
-    ],
+    "clusters": 
+    {
+        "servers": [
+            {
+                "location": "belgium",
+                "system": "linux",
+                "nodes": [
+                    1,
+                    3,
+                    5
+                ],
+                "threads": [
+                    8
+                ]
+            }
+        ],
+        "clients": [
+            {
+                "location": "belgium",
+                "system": "linux",
+                "nodes": [
+                    10,
+                    100
+                ],
+                "threads": [
+                    8
+                ]
+            }
+        ]
+    },
     "transient": true
 }
 ```

@@ -19,11 +19,19 @@ type JSONConfig struct {
 		Pause    string   `json:"pause"`
 		Duration string   `json:"duration"`
 	} `json:"tests-config"`
-	Clusters []struct {
-		Location string `json:"location"`
-		System   string `json:"system"`
-		Nodes    []int  `json:"nodes"`
-		Threads  []int  `json:"threads"`
+	Clusters struct {
+		Servers []struct {
+			Location string `json:"location"`
+			System   string `json:"system"`
+			Nodes    []int  `json:"nodes"`
+			Threads  []int  `json:"threads"`
+		} `json:"servers"`
+		Clients []struct {
+			Location string `json:"location"`
+			System   string `json:"system"`
+			Nodes    []int  `json:"nodes"`
+			Threads  []int  `json:"threads"`
+		} `json:"clients"`
 	} `json:"clusters"`
 	Transient bool `json:"transient"`
 }
